@@ -74,5 +74,18 @@ Behavior:
 - Some Paperless-ngx setups may reject certain query parameters; the search script falls back to client-side filtering when needed.
 - Do not commit `config.env` (it contains secrets). Use `config.example.env` as the template to share.
 
+## FAQ
+**Q: Why is `--text` empty or incomplete?**  
+A: OCR may still be running. Reprocess the document in Paperless-ngx and try again.
+
+**Q: How do I reprocess a document?**  
+A: Use the Paperless-ngx UI or call the reprocess endpoint (e.g. via `/api/documents/bulk_edit/` with method `reprocess`).
+
+**Q: I get 401/403 errors. What should I check?**  
+A: Verify that `PAPERLESS_TOKEN` is a valid API token with document permissions.
+
+**Q: Search results look incomplete when using filters.**  
+A: Some servers reject certain filters. The script will fall back to client-side filtering, but if your API blocks the query param entirely, try fewer filters.
+
 ## OpenClaw
 This skill is designed for OpenClaw, but the scripts work standalone from the command line.
