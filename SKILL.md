@@ -15,7 +15,6 @@ Use this skill to query a Paperless-ngx instance and retrieve or update document
 ## Quick Start
 ```bash
 python scripts/search.py --query "tax form" --limit 5
-python scripts/search.py --query "songani" --content --limit 5
 python scripts/fetch.py --id 123 --text
 python scripts/update_meta.py --id 123 --add-tag important
 ```
@@ -26,14 +25,13 @@ python scripts/update_meta.py --id 123 --add-tag important
 Run `scripts/search.py` to find documents by keyword, tag, type, correspondent, or date.
 
 Filters:
-- `--query` full-text search string
+- `--query` full-text search string (server-side, includes document content/OCR)
 - `--tag` tag name (repeatable)
 - `--type` document type name
 - `--correspondent` correspondent name
 - `--after` created after (YYYY-MM-DD)
 - `--before` created before (YYYY-MM-DD)
 - `--limit` max results (default 10)
-- `--content` include OCR text content in matching (slower)
 - `--json` output as JSON
 
 Example:
@@ -76,7 +74,7 @@ python scripts/update_meta.py --id 123 --add-tag important --remove-tag inbox
 - Authentication uses `Authorization: Token {PAPERLESS_TOKEN}`.
 - Pagination is handled automatically.
 - If text output is missing, OCR may still be processing. Reprocess in Paperless-ngx and retry.
-- Content search (`--content`) scans document text via the detail endpoint and can be slow on large archives.
+- Search uses Paperless-ngx server-side full-text search via the `query` parameter; no document contents are downloaded for searching.
 
 ## Resources
 - `scripts/search.py` searches documents with optional filters.

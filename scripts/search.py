@@ -156,10 +156,6 @@ def normalize(value: str) -> str:
     return value.strip().lower()
 
 
-def normalize_query(value: str) -> str:
-    return value.strip().lower()
-
-
 def format_table(headers: List[str], rows: List[List[str]]) -> str:
     widths = [len(h) for h in headers]
     for row in rows:
@@ -182,15 +178,11 @@ def main() -> int:
     parser.add_argument("--after", type=parse_date_arg, help="Created after YYYY-MM-DD")
     parser.add_argument("--before", type=parse_date_arg, help="Created before YYYY-MM-DD")
     parser.add_argument("--limit", type=int, default=10, help="Max results (default 10)")
-    parser.add_argument("--content", action="store_true", help="Search within OCR text content (slower)")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args()
 
     if args.limit <= 0:
         eprint("--limit must be greater than 0")
-        return 2
-    if args.content and not args.query:
-        eprint("--content requires --query")
         return 2
 
     base_url, token = require_env()
@@ -201,7 +193,7 @@ def main() -> int:
     })
 
     params: Dict[str, Any] = {}
-    if args.query and not args.content:
+    if args.query:
         params["query"] = args.query
     if args.tag:
         params["tags__name__in"] = ",".join(args.tag)
@@ -216,34 +208,9 @@ def main() -> int:
 
     docs_url = build_url(base_url, "/api/documents/")
 
-    if args.content:
-        eprint("Content search enabled: scanning document text (this may be slow).")
-
     tag_map: Optional[Dict[int, str]] = None
     corr_map: Optional[Dict[int, str]] = None
     type_map: Optional[Dict[int, str]] = None
-    content_cache: Dict[int, str] = {}
-
-    def fetch_document_detail(doc_id: int) -> Dict[str, Any]:
-        url = build_url(base_url, f"/api/documents/{doc_id}/")
-        return request_json(session, url)
-
-    def content_matches_query(doc: Dict[str, Any], query_norm: str) -> bool:
-        doc_id = doc.get("id")
-        if doc_id is None:
-            return False
-        try:
-            doc_id_int = int(doc_id)
-        except (TypeError, ValueError):
-            return False
-        if doc_id_int not in content_cache:
-            detail = fetch_document_detail(doc_id_int)
-            content = str(detail.get("content") or "")
-            title = str(detail.get("title") or doc.get("title") or "")
-            filename = str(detail.get("original_file_name") or doc.get("original_file_name") or "")
-            combined = " ".join(value for value in [title, filename, content] if value)
-            content_cache[doc_id_int] = combined.lower()
-        return query_norm in content_cache[doc_id_int]
 
     def ensure_tag_map() -> Dict[int, str]:
         nonlocal tag_map
@@ -262,8 +229,6 @@ def main() -> int:
         if type_map is None:
             type_map = fetch_id_name_map(session, base_url, "document_types")
         return type_map
-
-    query_norm = normalize_query(args.query) if args.query else ""
 
     def passes_filters(doc: Dict[str, Any]) -> bool:
         if args.tag:
@@ -290,9 +255,6 @@ def main() -> int:
             if args.after and created_date < args.after:
                 return False
             if args.before and created_date > args.before:
-                return False
-        if args.content and query_norm:
-            if not content_matches_query(doc, query_norm):
                 return False
         return True
 
