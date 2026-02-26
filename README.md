@@ -34,7 +34,7 @@ python scripts/search.py --correspondent "Acme Corp" --type "Invoice" --json
 ```
 
 Supported filters:
-- `--query` full-text search (server-side, includes document content/OCR)
+- `--query` full-text search (server-side; matches OCR/content when indexed by Paperless-ngx)
 - `--tag` tag name (repeatable)
 - `--type` document type name
 - `--correspondent` correspondent name
@@ -71,8 +71,9 @@ Behavior:
 - Pagination is handled automatically.
 - If `--text` output is empty, OCR may still be processing. Reprocess in Paperless-ngx, then retry.
 - A 401/403 error usually means the token is invalid or lacks access.
-- Some Paperless-ngx setups may reject certain query parameters; the search script falls back to client-side filtering when needed.
+- Some Paperless-ngx setups may reject certain query parameters; the search script falls back to client-side filtering of metadata when needed.
 - Search uses Paperless-ngx server-side full-text search via the `query` parameter; no document contents are downloaded for searching.
+- Full-text results depend on the server index (OCR/content availability is determined by Paperless-ngx settings and processing status).
 - Do not commit `config.env` (it contains secrets). Use `config.example.env` as the template to share.
 
 ## FAQ
@@ -87,6 +88,9 @@ A: Verify that `PAPERLESS_TOKEN` is a valid API token with document permissions.
 
 **Q: Search results look incomplete when using filters.**  
 A: Some servers reject certain filters. The script will fall back to client-side filtering, but if your API blocks the query param entirely, try fewer filters.
+
+**Q: Does search include OCR/content?**  
+A: Yes, `--query` uses Paperless-ngx server-side full-text search, which includes OCR/content when it has been indexed by the server.
 
 ## OpenClaw
 This skill is designed for OpenClaw, but the scripts work standalone from the command line.

@@ -23,9 +23,10 @@ python scripts/update_meta.py --id 123 --add-tag important
 
 ### Search documents
 Run `scripts/search.py` to find documents by keyword, tag, type, correspondent, or date.
+`--query` performs server-side full-text search in Paperless-ngx (includes OCR/content when the server index has it). This skill never downloads document content for searching.
 
 Filters:
-- `--query` full-text search string (server-side, includes document content/OCR)
+- `--query` full-text search string (server-side; matches OCR/content when indexed)
 - `--tag` tag name (repeatable)
 - `--type` document type name
 - `--correspondent` correspondent name
@@ -75,6 +76,7 @@ python scripts/update_meta.py --id 123 --add-tag important --remove-tag inbox
 - Pagination is handled automatically.
 - If text output is missing, OCR may still be processing. Reprocess in Paperless-ngx and retry.
 - Search uses Paperless-ngx server-side full-text search via the `query` parameter; no document contents are downloaded for searching.
+- Full-text results depend on the server index (OCR/content availability is determined by Paperless-ngx settings and processing status).
 
 ## Resources
 - `scripts/search.py` searches documents with optional filters.
