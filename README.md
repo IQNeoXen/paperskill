@@ -21,6 +21,7 @@ PAPERLESS_TOKEN=your_api_token_here
 ## Quickstart
 ```bash
 python scripts/search.py --query "tax form" --limit 5
+python scripts/search.py --query "songani" --content --limit 5
 python scripts/fetch.py --id 123 --text
 python scripts/update_meta.py --id 123 --add-tag important
 ```
@@ -40,6 +41,7 @@ Supported filters:
 - `--correspondent` correspondent name
 - `--after` created after (YYYY-MM-DD)
 - `--before` created before (YYYY-MM-DD)
+- `--content` include OCR text content in matching (slower; fetches document details)
 
 Output:
 - Default: human-readable table with columns `id`, `title`, `created`, `correspondent`, `tags`, `document_type`
@@ -72,6 +74,7 @@ Behavior:
 - If `--text` output is empty, OCR may still be processing. Reprocess in Paperless-ngx, then retry.
 - A 401/403 error usually means the token is invalid or lacks access.
 - Some Paperless-ngx setups may reject certain query parameters; the search script falls back to client-side filtering when needed.
+- Content search (`--content`) scans document text via the detail endpoint and can be slow on large archives.
 - Do not commit `config.env` (it contains secrets). Use `config.example.env` as the template to share.
 
 ## FAQ
