@@ -4,7 +4,7 @@ import json
 import os
 import sys
 from typing import Any, Dict, Iterable, List, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 try:
     import requests
@@ -61,6 +61,13 @@ def request_json(session: requests.Session, url: str, method: str = "GET", paylo
         raise ApiError(resp.status_code, "Invalid JSON response from server.") from exc
 
 
+def _same_origin(base: str, candidate: str) -> bool:
+    """Return True if candidate URL shares the same scheme, host, and port as base."""
+    b = urlparse(base)
+    c = urlparse(candidate)
+    return (b.scheme, b.hostname, b.port) == (c.scheme, c.hostname, c.port)
+
+
 def iter_pages(session: requests.Session, url: str) -> Iterable[Dict[str, Any]]:
     data = request_json(session, url)
     while True:
@@ -70,6 +77,9 @@ def iter_pages(session: requests.Session, url: str) -> Iterable[Dict[str, Any]]:
             break
         if isinstance(next_url, str) and not next_url.startswith("http"):
             next_url = urljoin(url, next_url)
+        if not _same_origin(url, next_url):
+            eprint(f"Warning: pagination 'next' URL has a different origin; stopping to prevent SSRF.")
+            break
         data = request_json(session, next_url)
 
 
