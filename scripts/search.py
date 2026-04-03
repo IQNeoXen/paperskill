@@ -73,12 +73,19 @@ def _same_origin(base: str, candidate: str) -> bool:
     return (b.scheme, b.hostname, b.port) == (c.scheme, c.hostname, c.port)
 
 
+_PAGE_CAP = 1000
+
+
 def iter_pages(session: requests.Session, url: str, params: Optional[Dict[str, Any]] = None) -> Iterable[Dict[str, Any]]:
     data = request_json(session, url, params=params)
+    page_count = 1
     while True:
         yield data
         next_url = data.get("next")
         if not next_url:
+            break
+        if page_count >= _PAGE_CAP:
+            eprint(f"Warning: pagination cap of {_PAGE_CAP} pages reached; stopping to avoid runaway requests.")
             break
         if isinstance(next_url, str) and not next_url.startswith("http"):
             next_url = urljoin(url, next_url)
@@ -86,6 +93,7 @@ def iter_pages(session: requests.Session, url: str, params: Optional[Dict[str, A
             eprint(f"Warning: pagination 'next' URL has a different origin; stopping to prevent SSRF.")
             break
         data = request_json(session, next_url, params=None)
+        page_count += 1
 
 
 def iter_documents_with_fallback(

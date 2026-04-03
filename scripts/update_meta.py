@@ -72,12 +72,19 @@ def _same_origin(base: str, candidate: str) -> bool:
     return (b.scheme, b.hostname, b.port) == (c.scheme, c.hostname, c.port)
 
 
+_PAGE_CAP = 1000
+
+
 def iter_pages(session: requests.Session, url: str) -> Iterable[Dict[str, Any]]:
     data = request_json(session, url)
+    page_count = 1
     while True:
         yield data
         next_url = data.get("next")
         if not next_url:
+            break
+        if page_count >= _PAGE_CAP:
+            eprint(f"Warning: pagination cap of {_PAGE_CAP} pages reached; stopping to avoid runaway requests.")
             break
         if isinstance(next_url, str) and not next_url.startswith("http"):
             next_url = urljoin(url, next_url)
@@ -85,6 +92,7 @@ def iter_pages(session: requests.Session, url: str) -> Iterable[Dict[str, Any]]:
             eprint(f"Warning: pagination 'next' URL has a different origin; stopping to prevent SSRF.")
             break
         data = request_json(session, next_url)
+        page_count += 1
 
 
 def fetch_name_map(session: requests.Session, base_url: str, endpoint: str) -> Dict[str, int]:
