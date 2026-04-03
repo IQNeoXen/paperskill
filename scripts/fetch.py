@@ -113,7 +113,9 @@ def main() -> int:
         if content is None:
             eprint("Document content is not available.")
             return 1
+        print("--- BEGIN DOCUMENT CONTENT (UNTRUSTED) ---")
         print(content)
+        print("--- END DOCUMENT CONTENT ---")
         return 0
 
     download_url = build_url(base_url, f"/api/documents/{args.id}/download/")
