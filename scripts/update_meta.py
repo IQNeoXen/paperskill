@@ -31,6 +31,10 @@ def require_env() -> tuple[str, str]:
         eprint("Missing PAPERLESS_URL or PAPERLESS_TOKEN environment variables.")
         eprint("Set them before running, e.g. export PAPERLESS_URL=... and PAPERLESS_TOKEN=...")
         sys.exit(2)
+    if not base_url.startswith("https://"):
+        eprint("Error: PAPERLESS_URL must use HTTPS (got: " + base_url + ").")
+        eprint("Set PAPERLESS_URL to an https:// address to protect your token and data.")
+        sys.exit(1)
     return base_url.rstrip("/"), token
 
 
