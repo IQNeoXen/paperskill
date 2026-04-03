@@ -134,6 +134,8 @@ def main() -> int:
     filename = parse_filename_from_header(resp.headers.get("Content-Disposition", ""))
     if not filename:
         filename = doc.get("original_file_name") or doc.get("filename") or f"document_{args.id}"
+    # Strip any directory components from the server-returned filename to prevent path traversal.
+    filename = Path(filename).name or f"document_{args.id}"
 
     out_path = determine_output_path(args.out, filename)
     out_path.parent.mkdir(parents=True, exist_ok=True)
