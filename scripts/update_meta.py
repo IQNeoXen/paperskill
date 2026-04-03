@@ -56,7 +56,8 @@ def request_json(session: requests.Session, url: str, method: str = "GET", paylo
             data = resp.json()
             message = data.get("detail") or data.get("error") or json.dumps(data)
         except ValueError:
-            message = resp.text.strip() or f"HTTP {resp.status_code}"
+            safe_text = re.sub(r'[^\x20-\x7E]', '', resp.text)[:200]
+            message = safe_text.strip() or f"HTTP {resp.status_code}"
         raise ApiError(resp.status_code, message)
 
     try:

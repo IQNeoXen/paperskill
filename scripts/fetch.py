@@ -58,7 +58,8 @@ def request_json(session: requests.Session, url: str) -> Dict[str, Any]:
             payload = resp.json()
             message = payload.get("detail") or payload.get("error") or json.dumps(payload)
         except ValueError:
-            message = resp.text.strip() or f"HTTP {resp.status_code}"
+            safe_text = re.sub(r'[^\x20-\x7E]', '', resp.text)[:200]
+            message = safe_text.strip() or f"HTTP {resp.status_code}"
         raise ApiError(resp.status_code, message)
 
     try:
